@@ -16,7 +16,7 @@ class ActivitiesState extends State<Activities> {
   final _scaffoldKey = new GlobalKey<ScaffoldState>();
 
   // TODO: Get this data from database
-  List<ActivityItem> items = DummyActivityItems().getDummies();
+  List<ActivityItem> items;
 
   VoidCallback _showBottomSheetCallback;
 
@@ -25,6 +25,7 @@ class ActivitiesState extends State<Activities> {
   void initState() {
     super.initState();
     _showBottomSheetCallback = _showBottomSheet;
+    items = DummyActivityItems().getDummies();
   }
 
   void _toggleBottomSheet() {
@@ -61,10 +62,10 @@ class ActivitiesState extends State<Activities> {
           child: ExpansionPanelList(
             expansionCallback: (int index, bool isExpanded) {
               setState(() {
-                items[index].isExpanded = !items[index].isExpanded;
+                items[index].key.currentState.toggleExpanded();
                 for(var i = 0; i < items.length; i++) {
                   if (i != index) {
-                    items[i].isExpanded = false;
+                    items[i].key.currentState.isExpanded = false;
                   }
                 }
               });
@@ -83,8 +84,8 @@ class ActivitiesState extends State<Activities> {
                         ),
                       ));
                 },
-                isExpanded: item.isExpanded,
-                body: item.getBody(),
+                isExpanded: item.key.currentState != null ? item.key.currentState.isExpanded : false,
+                body: item,
               );
             }).toList(),
           ),

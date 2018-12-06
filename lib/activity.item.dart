@@ -1,16 +1,39 @@
 import 'package:flutter/material.dart';
 
-class ActivityItem {
-  bool isExpanded;
+class ActivityItem extends StatefulWidget {
   final String header;
   final List<CheckIn> checkIns;
-  Icon icon;
-  final String iconString;
-  ActivityItem(this.isExpanded, this.header, this.checkIns, this.iconString) {
-    icon = new Icon(activityIcons[iconString]);
+  final Icon icon;
+  final GlobalKey<ActivityItemState> key;
+  factory ActivityItem(Key key, String header, List<CheckIn> checkIns, String iconString) {
+    return new ActivityItem._(key, header, checkIns, new Icon(ActivityItemState.activityIcons[iconString]));
   }
 
-  Widget getBody() {
+  ActivityItem._(this.key, this.header, this.checkIns, this.icon);
+
+
+
+  @override
+  State<StatefulWidget> createState() {
+    return new ActivityItemState();
+  }
+}
+
+class ActivityItemState extends State<ActivityItem> {
+  bool isExpanded = false;
+
+
+  DateTime unfinishedCheckIn;
+
+
+  toggleExpanded() {
+    setState(() {
+      isExpanded = !isExpanded;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Padding(
         padding: EdgeInsets.all(20.0),
         child: Column(children: <Widget>[
@@ -28,8 +51,8 @@ class ActivityItem {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text('Last Entry:'),
-                    Text(this.checkIns.last.dateOfCheckOut()),
-                    Text(this.checkIns.last.totalTime().toString() + ' hrs')
+                    Text(widget.checkIns.last.dateOfCheckOut()),
+                    Text(widget.checkIns.last.prettyTotalTime())
                   ])),
           Padding(
             padding:EdgeInsets.all(10.0),
@@ -37,20 +60,33 @@ class ActivityItem {
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
                   RaisedButton(onPressed: null, child: Text('VIEW DETAILS')),
-                  RaisedButton(onPressed: null, child: Text('Check In'), color: Colors.lightBlue),
-
+                  RaisedButton(onPressed: checkIn, child: Text(unfinishedCheckIn == null ? 'Check In' : 'Check Out'), color: unfinishedCheckIn == null ? Colors.lightBlue : Colors.blueGrey)
           ]))
 
         ]));
   }
 
+  checkIn() {
+    if (unfinishedCheckIn == null) {
+      setState(() {
+        unfinishedCheckIn = DateTime.now();
+      });
+    } else {
+      setState(() {
+        widget.checkIns.add(CheckIn(unfinishedCheckIn, DateTime.now()));
+        unfinishedCheckIn = null;
+      });
+
+    }
+  }
+
   getTotalTime([TimeSpans span = TimeSpans.Hours]) {
     double total = 0;
-    this.checkIns.forEach((checkIn) => total += checkIn.totalTime(span));
+    widget.checkIns.forEach((checkIn) => total += checkIn.totalTime(span));
     return total;
   }
 
-  final activityIcons = <String, IconData>{
+  static final activityIcons = <String, IconData>{
     'access_time': Icons.access_time,
     'access_alarm': Icons.access_alarm,
     'add_alarm': Icons.add_alarm,
@@ -93,6 +129,10 @@ class CheckIn {
     }
   }
 
+  prettyTotalTime() {
+    return totalTime().toString() + '.' + (totalTime(TimeSpans.Minutes) - totalTime(TimeSpans.Hours)).toString() + ' hrs';
+  }
+
   dateOfCheckOut() {
     return checkOut.month.toString() + '/' + checkOut.day.toString();
   }
@@ -104,7 +144,7 @@ class DummyActivityItems {
   getDummies() {
     return <ActivityItem>[
       ActivityItem(
-        false,
+        new GlobalKey<ActivityItemState>(),
         'Advice',
         <CheckIn> [
           CheckIn(DateTime.now().add(Duration(hours: -2)), DateTime.now()),
@@ -112,7 +152,7 @@ class DummyActivityItems {
         'access_time',
       ),
       ActivityItem(
-        false,
+        new GlobalKey<ActivityItemState>(),
         'Meetings',
         <CheckIn> [
           CheckIn(DateTime.now().add(Duration(hours: -8)), DateTime.now().add(Duration(hours: -4))),
