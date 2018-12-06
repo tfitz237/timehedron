@@ -1,61 +1,22 @@
 import 'package:flutter/material.dart';
+import 'package:timehedron_f/activity.item.dart';
+import 'package:timehedron_f/add.activity.dart';
 
-void main() => runApp(Criterias());
+void main() => runApp(Activities());
 
 
 
-class Criterias extends StatefulWidget {
-  CriteriaState createState() =>  CriteriaState();
-}
-
-class ActivityItem {
-  bool isExpanded;
-  final String header;
-  final Widget body;
-  final Icon iconpic;
-  ActivityItem(this.isExpanded, this.header, this.body, this.iconpic);
+class Activities extends StatefulWidget {
+  ActivitiesState createState() =>  ActivitiesState();
 }
 
 
-class CriteriaState extends State<Criterias> {
 
-
+class ActivitiesState extends State<Activities> {
   final _scaffoldKey = new GlobalKey<ScaffoldState>();
 
-  List<ActivityItem> items = <ActivityItem>[
-     ActivityItem(
-        false,
-        'Advice',
-        Padding(
-            padding: EdgeInsets.all(20.0),
-            child: Column(
-                children: <Widget>[
-                  Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      Padding(padding: EdgeInsets.all(10.0),
-                          child: Text('hello')),
-                      Padding(padding: EdgeInsets.all(10.0), child: Text('hello 2')),
-                      Padding(padding: EdgeInsets.all(10.0), child: Text('hello 3'))
-                  ],),
-
-                ])
-        ),
-        Icon(Icons.access_time),
-    ),
-    ActivityItem(
-      false,
-      'Meetings',
-      Padding(
-          padding: EdgeInsets.all(20.0),
-          child: Column(
-              children: <Widget>[
-                Padding(padding: EdgeInsets.all(10.0), child: Text('hello 3'))
-              ])
-      ),
-      Icon(Icons.access_alarm),
-    )
-    //give all your items here
-  ];
+  // TODO: Get this data from database
+  List<ActivityItem> items = DummyActivityItems().getDummies();
 
   VoidCallback _showBottomSheetCallback;
 
@@ -80,21 +41,7 @@ class CriteriaState extends State<Criterias> {
     });
     _bottomSheetController = _scaffoldKey.currentState.showBottomSheet((BuildContext context) {
       final ThemeData themeData = Theme.of(context);
-      return Container(
-          decoration: BoxDecoration(
-              border: Border(top: BorderSide(color: themeData.disabledColor))
-          ),
-          child: Padding(
-              padding: const EdgeInsets.all(32.0),
-              child: Text('This is a Material persistent bottom sheet. Drag downwards to dismiss it.',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                      color: themeData.accentColor,
-                      fontSize: 24.0
-                  )
-              )
-          )
-      );
+      return AddActivity(themeData).getForm();
     });
     _bottomSheetController.closed.whenComplete(() {
       if (mounted) {
@@ -105,11 +52,10 @@ class CriteriaState extends State<Criterias> {
     });
   }
 
-  ListView List_Criteria;
+  ListView expansionList;
   Widget build(BuildContext context) {
-    List_Criteria = ListView(
+    expansionList = ListView(
       children: [
-        Padding(padding:  EdgeInsets.all(10.0), child: Center(child: Text('Activities', style:  TextStyle(fontSize: 20.0)),)),
         Padding(
           padding: EdgeInsets.all(10.0),
           child: ExpansionPanelList(
@@ -127,7 +73,7 @@ class CriteriaState extends State<Criterias> {
               return  ExpansionPanel(
                 headerBuilder: (BuildContext context, bool isExpanded) {
                   return  ListTile(
-                      leading: item.iconpic,
+                      leading: item.icon,
                       title:  Text(
                         item.header,
                         textAlign: TextAlign.left,
@@ -138,7 +84,7 @@ class CriteriaState extends State<Criterias> {
                       ));
                 },
                 isExpanded: item.isExpanded,
-                body: item.body,
+                body: item.getBody(),
               );
             }).toList(),
           ),
@@ -146,30 +92,31 @@ class CriteriaState extends State<Criterias> {
       ],
     );
 
-    Scaffold scaffold =  Scaffold(
-      key: _scaffoldKey,
-      appBar: AppBar(
-        title: Text("Timehedron"),
-        actions: <Widget>[
-          PopupMenuButton<int>(itemBuilder: (BuildContext context) =>
-            <PopupMenuEntry<int>>[
-              PopupMenuItem<int>(child: Text('Settings'), value: 0)
-            ],
-            onSelected: (int result) {
-              setState(() {
-              });
-            })
+    return MaterialApp(theme:  ThemeData.dark(),
+      home: Scaffold(
+        key: _scaffoldKey,
+        appBar: AppBar(
+            title: Text("Timehedron"),
+            actions: <Widget>[
+              PopupMenuButton<int>(itemBuilder: (BuildContext context) =>
+              <PopupMenuEntry<int>>[
+                PopupMenuItem<int>(child: Text('Settings'), value: 0)
+              ],
+                  onSelected: (int result) {
+                    setState(() {
+                    });
+                  })
 
-        ]
+            ]
 
-      ),
-      body: List_Criteria,
-      floatingActionButton: FloatingActionButton(
-        onPressed: _toggleBottomSheet,
-        child: _showBottomSheetCallback != null ? Icon(Icons.add) : Icon(Icons.remove),
-        backgroundColor: _showBottomSheetCallback != null ? Colors.blueGrey : Colors.grey,
-      ),
+        ),
+        body: expansionList,
+        floatingActionButton: FloatingActionButton(
+          onPressed: _toggleBottomSheet,
+          child: _showBottomSheetCallback != null ? Icon(Icons.add) : Icon(Icons.remove),
+          backgroundColor: _showBottomSheetCallback != null ? Colors.blueGrey : Colors.grey,
+        ),
+      )
     );
-    return MaterialApp(home: scaffold, theme:  ThemeData.dark());
   }
 }
