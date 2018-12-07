@@ -1,16 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:json_annotation/json_annotation.dart';
+part 'activity.item.g.dart';
 
+@JsonSerializable()
 class ActivityItem extends StatefulWidget {
   final String header;
   final List<CheckIn> checkIns;
-  final Icon icon;
+  final String iconString;
   final GlobalKey<ActivityItemState> key;
-  factory ActivityItem(Key key, String header, List<CheckIn> checkIns, String iconString) {
-    return new ActivityItem._(key, header, checkIns, new Icon(ActivityItemState.activityIcons[iconString]));
-  }
 
-  ActivityItem._(this.key, this.header, this.checkIns, this.icon);
+  ActivityItem(this.key, this.header, this.checkIns, this.iconString);
 
+  static Icon iconFromString(String iconString) => new Icon(ActivityItemState.activityIcons[iconString]);
+
+  factory ActivityItem.fromJson(Map<String, dynamic> json) => _$ActivityItemFromJson(json);
+
+  Map<String, dynamic> toJson() => _$ActivityItemToJson(this);
 
 
   @override
@@ -42,7 +47,7 @@ class ActivityItemState extends State<ActivityItem> {
               child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text('Total Time 3132132:'),
+                    Text('Total Time:'),
                     Text(this.getTotalTime().toString() + ' hrs'),
                   ])),
           Padding(
@@ -51,8 +56,8 @@ class ActivityItemState extends State<ActivityItem> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text('Last Entry:'),
-                    Text(widget.checkIns.last.dateOfCheckOut()),
-                    Text(widget.checkIns.last.prettyTotalTime())
+                    Text(widget.checkIns.isNotEmpty ? widget.checkIns.last.dateOfCheckOut() : 'N/A' ),
+                    Text(widget.checkIns.isNotEmpty ? widget.checkIns?.last?.prettyTotalTime() : 'N/A')
                   ])),
           Padding(
             padding:EdgeInsets.all(10.0),
@@ -74,6 +79,7 @@ class ActivityItemState extends State<ActivityItem> {
     } else {
       setState(() {
         widget.checkIns.add(CheckIn(unfinishedCheckIn, DateTime.now()));
+
         unfinishedCheckIn = null;
       });
 
@@ -109,6 +115,7 @@ class ActivityItemState extends State<ActivityItem> {
 
 enum TimeSpans { Seconds, Minutes, Hours, Days, Months }
 
+@JsonSerializable()
 class CheckIn {
   DateTime checkIn;
   DateTime checkOut;
@@ -136,6 +143,11 @@ class CheckIn {
   dateOfCheckOut() {
     return checkOut.month.toString() + '/' + checkOut.day.toString();
   }
+
+
+  factory CheckIn.fromJson(Map<String, dynamic> json) => _$CheckInFromJson(json);
+
+  Map<String, dynamic> toJson() => _$CheckInToJson(this);
 }
 
 

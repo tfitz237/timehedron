@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:timehedron_f/activity.item.dart';
+import 'package:timehedron_f/activity.repo.dart';
 import 'package:timehedron_f/add.activity.dart';
 
 void main() => runApp(Activities());
@@ -25,7 +26,8 @@ class ActivitiesState extends State<Activities> {
   void initState() {
     super.initState();
     _showBottomSheetCallback = _showBottomSheet;
-    items = DummyActivityItems().getDummies();
+    items = List<ActivityItem>();
+    ActivitiesRepository().getAll().then((i) => items = i);
   }
 
   void _toggleBottomSheet() {
@@ -74,7 +76,7 @@ class ActivitiesState extends State<Activities> {
               return  ExpansionPanel(
                 headerBuilder: (BuildContext context, bool isExpanded) {
                   return  ListTile(
-                      leading: item.icon,
+                      leading: ActivityItem.iconFromString(item.iconString),
                       title:  Text(
                         item.header,
                         textAlign: TextAlign.left,
