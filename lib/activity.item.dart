@@ -42,7 +42,7 @@ class ActivityItemState extends State<ActivityItem> {
               child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text('Total Time:'),
+                    Text('Total Time 3132132:'),
                     Text(this.getTotalTime().toString() + ' hrs'),
                   ])),
           Padding(
